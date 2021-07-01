@@ -119,6 +119,23 @@ final class Deepl
 	}
 
 
+	/**
+	 * The method normalizes the language stylistics used by translating
+	 * to an helper language and then back to the default language.
+	 */
+	public function fixGrammarly(string $haystack, string $locale): string
+	{
+		$locale = $this->normalizeLocale($locale);
+		$helperLocale = $locale === self::CS ? self::EN_GB : self::DE;
+
+		return $this->translate(
+			$this->translate($haystack, $helperLocale, $locale),
+			$locale,
+			$helperLocale
+		);
+	}
+
+
 	public function getApiKey(): string
 	{
 		return $this->apiKey;
