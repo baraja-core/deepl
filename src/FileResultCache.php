@@ -43,7 +43,9 @@ final class FileResultCache implements ResultCache
 			}
 		}
 		if ($path !== null && is_file($path)) {
-			return ((string) file_get_contents($path)) ?: null;
+			$return = (string) file_get_contents($path);
+
+			return $return !== '' ? $return : null;
 		}
 
 		return null;

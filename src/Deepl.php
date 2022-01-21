@@ -187,14 +187,15 @@ final class Deepl
 		);
 
 		if (is_string($response) === true) {
+			/** @var array{translations: array{0?: array{text: string}}} $data */
 			$data = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
-			if (isset($data['translations'])) {
-				return $data['translations'][0]['text'] ?? '';
+			if (isset($data['translations'][0]['text'])) {
+				return $data['translations'][0]['text'];
 			}
 			throw new \InvalidArgumentException('Deepl API response is broken.' . "\n\n" . $response);
 		}
 
-		$errorMessage = error_get_last()['message'];
+		$errorMessage = error_get_last()['message'] ?? '';
 		if (str_contains($errorMessage, '403 Forbidden')) {
 			$errorMessage .= "\n";
 			$errorMessage .= 'Error 403: Authorization failed. Please supply a valid auth_key parameter' . "\n";
@@ -206,7 +207,9 @@ final class Deepl
 			$errorMessage .= 'If your account has not been verified, it may disable API query processing.';
 		}
 
-		throw new \InvalidArgumentException('Deepl API response is invalid.' . "\n". $errorMessage);
+		throw new \InvalidArgumentException(sprintf('Deepl API response is invalid.%s',
+			$errorMessage !== '' ? "\n" . $errorMessage : '',
+		));
 	}
 
 
