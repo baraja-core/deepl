@@ -170,7 +170,7 @@ final class Deepl
 			$args['source_lang'] = $sourceLang;
 		}
 
-		$response = file_get_contents(
+		$response = @file_get_contents(
 			$this->uri,
 			false,
 			stream_context_create(
@@ -186,15 +186,26 @@ final class Deepl
 		);
 
 		if (is_string($response) === true) {
-			$data = json_decode($response, true);
+			$data = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
 			if (isset($data['translations'])) {
 				return $data['translations'][0]['text'] ?? '';
-			} else {
-				throw new \InvalidArgumentException('Deepl API response is broken.' . "\n\n" . $response);
 			}
+			throw new \InvalidArgumentException('Deepl API response is broken.' . "\n\n" . $response);
 		}
 
-		throw new \InvalidArgumentException('Deepl API response is invalid: ' . (error_get_last()['message'] ?? ''));
+		$errorMessage = error_get_last()['message'];
+		if (str_contains($errorMessage, '403 Forbidden')) {
+			$errorMessage .= "\n";
+			$errorMessage .= 'Error 403: Authorization failed. Please supply a valid auth_key parameter' . "\n";
+			$errorMessage .= 'More info: https://support.deepl.com/hc/en-us/articles/360020031840-Error-code-403';
+		}
+		if ($this->isFree()) {
+			$errorMessage .= "\n\n";
+			$errorMessage .= 'Note for free accounts: Deepl requires credit card verification for newly created accounts. ';
+			$errorMessage .= 'If your account has not been verified, it may disable API query processing.';
+		}
+
+		throw new \InvalidArgumentException('Deepl API response is invalid.' . "\n". $errorMessage);
 	}
 
 
