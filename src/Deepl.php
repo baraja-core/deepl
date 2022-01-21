@@ -84,10 +84,11 @@ final class Deepl
 	{
 		$this->apiKey = trim($apiKey);
 		$this->free = $free;
-		$this->setUri(
-			'https://api' . ($free ? '-free' : '')
-			. '.deepl.com/v2/translate?auth_key=' . urlencode($apiKey)
-		);
+		$this->setUri(sprintf(
+			'https://api%s.deepl.com/v2/translate?auth_key=%s',
+			$free ? '-free' : '',
+			urlencode($apiKey),
+		));
 		$this->resultCache = $resultCache ?? new FileResultCache;
 	}
 
@@ -131,7 +132,7 @@ final class Deepl
 		return $this->translate(
 			$this->translate($haystack, $helperLocale, $locale),
 			$locale,
-			$helperLocale
+			$helperLocale,
 		);
 	}
 
@@ -181,8 +182,8 @@ final class Deepl
 						'user_agent' => 'BarajaBot in PHP',
 						'content' => http_build_query($args),
 					],
-				]
-			)
+				],
+			),
 		);
 
 		if (is_string($response) === true) {
@@ -213,9 +214,7 @@ final class Deepl
 	{
 		$locale = strtoupper(trim($locale));
 		if (in_array($locale, self::SUPPORTED_LANGUAGES, true) === false) {
-			throw new \InvalidArgumentException(
-				'Locale is not supported now, because haystack "' . $locale . '" given.',
-			);
+			throw new \InvalidArgumentException(sprintf('Locale is not supported now, because haystack "%s" given.', $locale));
 		}
 
 		return $locale;
