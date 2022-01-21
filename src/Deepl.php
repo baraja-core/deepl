@@ -187,7 +187,7 @@ final class Deepl
 		);
 
 		if (is_string($response) === true) {
-			/** @var array{translations: array{0?: array{text: string}}} $data */
+			/** @var array{translations?: array{0: array{text?: string}}} $data */
 			$data = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
 			if (isset($data['translations'][0]['text'])) {
 				return $data['translations'][0]['text'];
