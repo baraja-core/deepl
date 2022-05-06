@@ -181,7 +181,6 @@ final class Deepl
 
 		$response = curl_exec($curl);
 		$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-		assert(is_numeric($httpCode));
 
 		if ($response === false || $httpCode !== 200) {
 			$errorMessage = sprintf("[HTTP CODE %d] %s\n", $httpCode, curl_error($curl));
@@ -196,15 +195,15 @@ final class Deepl
 
 			throw new \InvalidArgumentException(sprintf("Deepl API response is invalid.\n%s\n\ncURL info: %s",
 				trim($errorMessage),
-				(string) json_encode(curl_getinfo($curl), JSON_PRETTY_PRINT)
+				(string) json_encode(curl_getinfo($curl), JSON_PRETTY_PRINT),
 			));
 		}
 
 		if (is_string($response) === true) {
 			/** @var array{translations?: array{0: array{text?: string}}, message?: string} $data */
 			$data = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
-			if ($httpCode !== 200 && isset($responseArray['message'])) {
-				throw new \InvalidArgumentException($responseArray['message']);
+			if (isset($response['message'])) {
+				throw new \InvalidArgumentException($response['message']);
 			}
 			if (isset($data['translations'][0]['text'])) {
 				return $data['translations'][0]['text'];
