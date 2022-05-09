@@ -182,7 +182,7 @@ final class Deepl
 		$response = curl_exec($curl);
 		$httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
-		if ($response === false || $httpCode !== 200) {
+		if (is_string($response) === false || $httpCode !== 200) {
 			$errorMessage = sprintf("[HTTP CODE %d] %s\n", $httpCode, curl_error($curl));
 			if ($httpCode === 403 || str_contains($errorMessage, '403 Forbidden')) {
 				$errorMessage .= 'Error 403: Authorization failed. Please supply a valid auth_key parameter' . "\n";
