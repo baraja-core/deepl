@@ -199,17 +199,15 @@ final class Deepl
 			));
 		}
 
-		if (is_string($response) === true) {
-			/** @var array{translations?: array{0: array{text?: string}}, message?: string} $data */
-			$data = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
-			if (isset($response['message'])) {
-				throw new \InvalidArgumentException($response['message']);
-			}
-			if (isset($data['translations'][0]['text'])) {
-				return $data['translations'][0]['text'];
-			}
+		/** @var array{translations: array{0: array{text?: string}}}|array{message: string} $data */
+		$data = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+		if (isset($data['translations'][0]['text'])) {
+			return $data['translations'][0]['text'];
 		}
-		throw new \InvalidArgumentException('Deepl API response is broken.' . "\n\n" . $response);
+		if (isset($data['message'])) {
+			throw new \InvalidArgumentException($data['message']);
+		}
+		throw new \InvalidArgumentException('Deepl API response is broken.');
 	}
 
 
