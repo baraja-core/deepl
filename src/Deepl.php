@@ -24,6 +24,7 @@ final class Deepl
 		FI = 'FI', // Finnish
 		FR = 'FR', // French
 		HU = 'HU', // Hungarian
+		ID = 'ID', // Indonesian
 		IT = 'IT', // Italian
 		JA = 'JA', // Japanese
 		LT = 'LT', // Lithuanian
@@ -38,6 +39,7 @@ final class Deepl
 		SK = 'SK', // Slovak
 		SL = 'SL', // Slovenian
 		SV = 'SV', // Swedish
+		TR = 'TR', // Turkish
 		ZH = 'ZH'; // Chinese
 
 	public const SupportedLanguages = [
