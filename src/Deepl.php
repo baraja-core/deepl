@@ -217,8 +217,12 @@ final class Deepl
 	private function normalizeLocale(string $locale): string
 	{
 		$locale = strtoupper(trim($locale));
-		if (in_array($locale, self::SUPPORTED_LANGUAGES, true) === false) {
-			throw new \InvalidArgumentException(sprintf('Locale is not supported now, because haystack "%s" given.', $locale));
+		if (in_array($locale, self::SupportedLanguages, true) === false) {
+			throw new \InvalidArgumentException(sprintf(
+				'Locale is not supported now, because haystack "%s" given. Did you mean "%s"?',
+				$locale,
+				implode('", "', self::SupportedLanguages),
+			));
 		}
 
 		return $locale;
