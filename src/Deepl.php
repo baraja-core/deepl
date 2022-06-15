@@ -40,7 +40,7 @@ final class Deepl
 		SV = 'SV', // Swedish
 		ZH = 'ZH'; // Chinese
 
-	public const SUPPORTED_LANGUAGES = [
+	public const SupportedLanguages = [
 		self::BG,
 		self::CS,
 		self::DA,
@@ -70,6 +70,9 @@ final class Deepl
 		self::SV,
 		self::ZH,
 	];
+
+	/** @deprecated since 2022-06-15, use SupportedLanguages. */
+	public const SUPPORTED_LANGUAGES = self::SupportedLanguages;
 
 	private string $apiKey;
 
