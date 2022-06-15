@@ -95,8 +95,15 @@ final class Deepl
 	}
 
 
-	public function translate(string $haystack, string $targetLocale, ?string $sourceLocale = null): string
-	{
+	/**
+	 * @param array<string, mixed> $args from https://www.deepl.com/en/docs-api/translating-text/
+	 */
+	public function translate(
+		string $haystack,
+		string $targetLocale,
+		?string $sourceLocale = null,
+		array $args = [],
+	): string {
 		if ($sourceLocale !== null) {
 			$sourceLang = $this->normalizeLocale($sourceLocale);
 			$sourceLangString = $sourceLang;
@@ -108,7 +115,14 @@ final class Deepl
 		$haystack = trim($haystack);
 		$cache = $this->resultCache->load($haystack, $sourceLangString, $targetLang);
 		if ($cache === null) {
-			$cache = $this->processApi($haystack, $sourceLang, $targetLang);
+			$mandatoryArgs = [
+				'text' => $haystack,
+				'target_lang' => $targetLang,
+			];
+			if ($sourceLang !== null) {
+				$mandatoryArgs['source_lang'] = $sourceLang;
+			}
+			$cache = $this->processApi(array_merge($args, $mandatoryArgs));
 			try {
 				$this->resultCache->save($haystack, $cache, $sourceLangString, $targetLang);
 			} catch (\Throwable $e) {
@@ -163,16 +177,11 @@ final class Deepl
 	}
 
 
-	private function processApi(string $haystack, ?string $sourceLang, string $targetLang): string
+	/**
+	 * @param array<string, mixed> $args
+	 */
+	private function processApi(array $args): string
 	{
-		$args = [
-			'text' => $haystack,
-			'target_lang' => $targetLang,
-		];
-		if ($sourceLang !== null) {
-			$args['source_lang'] = $sourceLang;
-		}
-
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($curl, CURLOPT_POST, true);
