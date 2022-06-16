@@ -31,31 +31,32 @@ $isFreeApiKey = true;
 $deepl = new \Baraja\Deepl\Deepl($apiKey, $isFreeApiKey);
 
 // Translate "Hello!" to DE
-echo $deepl->translate('Hello!', 'DE');
+echo $deepl->translate('Hello!', DeeplLocale::DE);
 ```
 
 The library is designed for maximum ease of use. At the same time, you can easily configure all the modules.
 
 Supported languages
-------------------
+-------------------
 
-You can always get the list of supported languages from the constant:
+You can always get the list of supported languages from the `DeeplLocale` enum:
 
 ```php
 echo 'Supported languages: ';
-echo implode(', ', \Baraja\Deepl\Deepl::SUPPORTED_LANGUAGES);
+$enumValues = array_map(static fn(\UnitEnum $case): string => htmlspecialchars($case->value ?? $case->name), DeeplLocale::cases());
+echo implode(', ', $enumValues);
 ```
 
-For normal translation work, we recommend using the built-in constants directly:
+For normal translation work, we recommend using the built-in enum cases directly:
 
 ```php
-$deepl->translate('Text', \Baraja\Deepl\Deepl::CS, \Baraja\Deepl\Deepl::EN);
+$deepl->translate('Text', DeeplLocale::CS, DeeplLocale::EN);
 ```
 
 The first language parameter specifies the target language of the translation, the second parameter specifies the source language. If you don't specify a language, it will be detected automatically.
 
 Translation cache
---------------
+-----------------
 
 We know that translating the same requests over and over again can be very expensive for you, because the API is charged by real requests. Therefore, the library directly implements a native cache that stores translation results in a temporary storage.
 
@@ -68,6 +69,6 @@ $deepl = new \Baraja\Deepl\Deepl($apiKey, false, $cache);
 ```
 
 📄 License
------------
+----------
 
 `baraja-core/deepl` is licensed under the MIT license. See the [LICENSE](https://github.com/baraja-core/deepl/blob/master/LICENSE) file for more details.

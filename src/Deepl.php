@@ -80,7 +80,7 @@ final class Deepl
 	public function fixGrammarly(string $haystack, string $locale): string
 	{
 		$locale = $this->normalizeLocale($locale);
-		$helperLocale = $locale === DeeplLocale::CS ? DeeplLocale::EN_GB : DeeplLocale::DE;
+		$helperLocale = $locale === DeeplLocale::CS->name ? DeeplLocale::EN_GB : DeeplLocale::DE;
 
 		return $this->translate(
 			$this->translate($haystack, $helperLocale, $locale),
