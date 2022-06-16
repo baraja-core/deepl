@@ -56,6 +56,7 @@ final class Deepl
 		self::FI,
 		self::FR,
 		self::HU,
+		self::ID,
 		self::IT,
 		self::JA,
 		self::LT,
@@ -70,6 +71,7 @@ final class Deepl
 		self::SK,
 		self::SL,
 		self::SV,
+		self::TR,
 		self::ZH,
 	];
 
