@@ -5,79 +5,10 @@ declare(strict_types=1);
 namespace Baraja\Deepl;
 
 
-use Tracy\Debugger;
-use Tracy\ILogger;
+use Psr\Log\LoggerInterface;
 
 final class Deepl
 {
-	public const
-		BG = 'BG', // Bulgarian
-		CS = 'CS', // Czech
-		DA = 'DA', // Danish
-		DE = 'DE', // German
-		EL = 'EL', // Greek
-		EN_GB = 'EN-GB', // English (British)
-		EN_US = 'EN-US', // English (American)
-		EN = 'EN', // English (unspecified variant for backward compatibility; please select EN-GB or EN-US instead)
-		ES = 'ES', // Spanish
-		ET = 'ET', // Estonian
-		FI = 'FI', // Finnish
-		FR = 'FR', // French
-		HU = 'HU', // Hungarian
-		ID = 'ID', // Indonesian
-		IT = 'IT', // Italian
-		JA = 'JA', // Japanese
-		LT = 'LT', // Lithuanian
-		LV = 'LV', // Latvian
-		NL = 'NL', // Dutch
-		PL = 'PL', // Polish
-		PT_PT = 'PT-PT', // Portuguese (all Portuguese varieties excluding Brazilian Portuguese)
-		PT_BR = 'PT-BR', // Portuguese (Brazilian)
-		PT = 'PT', // Portuguese (unspecified variant for backward compatibility; please select PT-PT or PT-BR instead)
-		RO = 'RO', // Romanian
-		RU = 'RU', // Russian
-		SK = 'SK', // Slovak
-		SL = 'SL', // Slovenian
-		SV = 'SV', // Swedish
-		TR = 'TR', // Turkish
-		ZH = 'ZH'; // Chinese
-
-	public const SupportedLanguages = [
-		self::BG,
-		self::CS,
-		self::DA,
-		self::DE,
-		self::EL,
-		self::EN_GB,
-		self::EN_US,
-		self::EN,
-		self::ES,
-		self::ET,
-		self::FI,
-		self::FR,
-		self::HU,
-		self::ID,
-		self::IT,
-		self::JA,
-		self::LT,
-		self::LV,
-		self::NL,
-		self::PL,
-		self::PT_PT,
-		self::PT_BR,
-		self::PT,
-		self::RO,
-		self::RU,
-		self::SK,
-		self::SL,
-		self::SV,
-		self::TR,
-		self::ZH,
-	];
-
-	/** @deprecated since 2022-06-15, use SupportedLanguages. */
-	public const SUPPORTED_LANGUAGES = self::SupportedLanguages;
-
 	private string $apiKey;
 
 	private bool $free;
@@ -87,8 +18,12 @@ final class Deepl
 	private ResultCache $resultCache;
 
 
-	public function __construct(string $apiKey, bool $free = false, ?ResultCache $resultCache = null)
-	{
+	public function __construct(
+		string $apiKey,
+		bool $free = false,
+		?ResultCache $resultCache = null,
+		private ?LoggerInterface $logger = null,
+	) {
 		$this->apiKey = trim($apiKey);
 		$this->free = $free;
 		$this->setUri(sprintf(
@@ -104,8 +39,8 @@ final class Deepl
 	 */
 	public function translate(
 		string $haystack,
-		string $targetLocale,
-		?string $sourceLocale = null,
+		string|DeeplLocale $targetLocale,
+		string|DeeplLocale|null $sourceLocale = null,
 		array $args = [],
 	): string {
 		if ($sourceLocale !== null) {
@@ -130,9 +65,7 @@ final class Deepl
 			try {
 				$this->resultCache->save($haystack, $cache, $sourceLangString, $targetLang);
 			} catch (\Throwable $e) {
-				if (class_exists(Debugger::class)) {
-					Debugger::log($e, ILogger::EXCEPTION);
-				}
+				$this->logger?->critical($e->getMessage(), ['exception' => $e]);
 			}
 		}
 
@@ -147,7 +80,7 @@ final class Deepl
 	public function fixGrammarly(string $haystack, string $locale): string
 	{
 		$locale = $this->normalizeLocale($locale);
-		$helperLocale = $locale === self::CS ? self::EN_GB : self::DE;
+		$helperLocale = $locale === DeeplLocale::CS ? DeeplLocale::EN_GB : DeeplLocale::DE;
 
 		return $this->translate(
 			$this->translate($haystack, $helperLocale, $locale),
@@ -227,17 +160,23 @@ final class Deepl
 	}
 
 
-	private function normalizeLocale(string $locale): string
+	private function normalizeLocale(string|DeeplLocale $locale): string
 	{
-		$locale = strtoupper(trim($locale));
-		if (in_array($locale, self::SupportedLanguages, true) === false) {
-			throw new \InvalidArgumentException(sprintf(
-				'Locale is not supported now, because haystack "%s" given. Did you mean "%s"?',
-				$locale,
-				implode('", "', self::SupportedLanguages),
-			));
+		if (is_string($locale)) {
+			$locale = strtoupper(trim($locale));
+			$enum = DeeplLocale::tryFrom($locale);
+			if ($enum === null) {
+				$enumValues = array_map(static fn(\UnitEnum $case): string => htmlspecialchars($case->value ?? $case->name), DeeplLocale::cases());
+				throw new \InvalidArgumentException(sprintf(
+					'Locale is not supported now, because haystack "%s" given. Did you mean "%s"?',
+					$locale,
+					implode('", "', $enumValues),
+				));
+			}
+		} else {
+			$enum = $locale;
 		}
 
-		return $locale;
+		return $enum->name;
 	}
 }
