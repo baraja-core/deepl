@@ -65,5 +65,7 @@ enum DeeplLocale: string
 
 	case TR = 'TR'; // Turkish
 
+	case UK = 'UK'; // Ukrainian
+
 	case ZH = 'ZH'; // Chinese
 }
