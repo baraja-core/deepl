@@ -139,6 +139,9 @@ final class Deepl
 				$errorMessage .= 'Error 403: Authorization failed. Please supply a valid auth_key parameter' . "\n";
 				$errorMessage .= 'More info: https://support.deepl.com/hc/en-us/articles/360020031840-Error-code-403' . "\n";
 			}
+			if ($httpCode === 456) {
+				$errorMessage .= 'Quota exceeded. The character limit has been reached';
+			}
 			if ($this->isFree()) {
 				$errorMessage .= 'Note for free accounts: Deepl requires credit card verification for newly created accounts. ';
 				$errorMessage .= 'If your account has not been verified, it may disable API query processing.' . "\n";
